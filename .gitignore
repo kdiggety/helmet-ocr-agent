@@ -1,0 +1,26 @@
+# Ignore helmet photo input/output folders
+photos/
+crops/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Python virtual environment
+venv/
+.env/
+
+# VS Code settings
+.vscode/
+
+# MacOS system files
+.DS_Store
+
+# Container artifacts
+*.log
+*.pid
+*.sock
