@@ -13,7 +13,7 @@ This agent captures images of helmets with size and purchase year stickers and s
 
 ```bash
 docker build -t helmet-ocr-agent .
-docker run -p 8888:8888 --device=/dev/video0 helmet-ocr-agent
+docker run -p 8888:8888 helmet-ocr-agent
 ```
 
 ## CLI Usage
