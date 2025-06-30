@@ -1,6 +1,11 @@
 # Ignore helmet photo input/output folders
-photos/
+images/
 crops/
+labels/
+runs/
+
+# PyTorch model checkpoint files
+*.pt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

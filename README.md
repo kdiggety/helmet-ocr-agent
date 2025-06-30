@@ -1,9 +1,12 @@
 # Helmet Sticker OCR Agent
 
 ## Features
-✅ Uses `ocr_pipeline.py` for single-source-of-truth logic  
-✅ Jupyter + CLI remain in sync automatically  
+✅ Uses `helmet_sticker_ocr_pipeline.py` for the shared OCR logic  
+✅ Jupyter + CLI remain in sync automatically
 ✅ Detects helmets and stickers, applies OCR, aggregates results
+
+## Notes
+✅ Leveraging MakeSense.ai to generate the COCO JSON file which contains the image regions for labels and categorizations
 
 ## 📖 Terminology
 
@@ -31,13 +34,27 @@ docker build -t helmet-sticker-ocr .
 docker run -p 8888:8888 helmet-sticker-ocr
 ```
 
-## CLI Usage
+### Train the Model
+```bash
+python -m venv yolovenv
+source yolovenv/bin/activate
+pip install --upgrade pip
+pip install onnx onnxruntime ultralytics
+
+python helmet_sticker_train.py --coco_json helmet_sticker_dataset.json --images_dir images/ --yolo_labels_dir labels/
+```
+
+### Run the Agent
+
+# Run the Agent via Python directly
 
 ```bash
+pip install pytesseract
+
 python run_agent.py --photos 5
 ```
 
-## Containerized CLI
+## Run the Agent via Python in Docker container
 ```
 docker run --rm -v $(pwd)/photos:/app/photos -v $(pwd)/crops:/app/crops helmet-sticker-ocr python run_agent.py
 ```
