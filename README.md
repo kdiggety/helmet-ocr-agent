@@ -41,7 +41,12 @@ source yolovenv/bin/activate
 pip install --upgrade pip
 pip install onnx onnxruntime ultralytics
 
+# Original
 python helmet_sticker_train.py --coco_json helmet_sticker_dataset.json --images_dir images/ --yolo_labels_dir labels/
+
+# New
+python -c "from coco_to_yolo import convert_coco_json_to_yolo; convert_coco_json_to_yolo('helmet_sticker_dataset.json', 'labels/train', ['NOCSAE Recertification Sticker','Helmet Size']);"
+python -c "from train_yolo import train_yolo_model; train_yolo_model();"
 ```
 
 ### Run the Agent
@@ -51,7 +56,11 @@ python helmet_sticker_train.py --coco_json helmet_sticker_dataset.json --images_
 ```bash
 pip install pytesseract
 
+# Original
 python run_agent.py --photos 5
+
+# New
+python -c "from run_prediction_agent import run_pipeline_on_folder; run_pipeline_on_folder();
 ```
 
 ## Run the Agent via Python in Docker container
