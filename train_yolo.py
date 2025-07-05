@@ -5,7 +5,7 @@ import json
 from tqdm import tqdm
 from ultralytics import YOLO
 
-def train_yolo_model(data_yaml='sticker_dataset.yaml', images_dir='images', labels_dir='labels/train', epochs=50, model_size='n', categories_filter=None):
+def train_yolo_model(data_yaml='sticker_dataset.yaml', images_dir='images', labels_dir='labels/train', epochs=100, model_size='n', categories_filter=None):
 
     # 1️⃣   Create dataset YAML
     create_dataset_yaml(data_yaml, images_dir, labels_dir)
@@ -23,7 +23,8 @@ def train_yolo_model(data_yaml='sticker_dataset.yaml', images_dir='images', labe
         imgsz=640,
         project='runs/train',
         name='helmet_sticker_yolo',
-        batch=16
+        batch=16,
+        device='cpu',
     )
     print(f"✅ Completed YOLOv8 training on {model_name}...")
 
