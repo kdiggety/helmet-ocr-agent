@@ -7,66 +7,13 @@ import json
 from tqdm import tqdm
 from ultralytics import YOLO
 
-def convert_coco_json_to_yolo(coco_json_path, output_dir, categories_filter=None):
-    os.makedirs(output_dir, exist_ok=True)
-
-    with open(coco_json_path) as f:
-        data = json.load(f)
-
-    category_map = {cat['id']: cat['name'] for cat in data['categories']}
-    name_to_id = {v: k for k, v in category_map.items()}
-
-    if categories_filter:
-        valid_ids = [name_to_id[name] for name in categories_filter if name in name_to_id]
-    else:
-        valid_ids = list(category_map.keys())
-
-    image_id_map = {}
-    for img in data['images']:
-        image_id_map[img['id']] = {
-            'file_name': img['file_name'],
-            'width': img['width'],
-            'height': img['height']
-        }
-
-    labels_written = 0
-    for ann in tqdm(data['annotations'], desc="Converting annotations"):
-        category_id = ann['category_id']
-        if category_id not in valid_ids:
-            continue
-
-        image_id = ann['image_id']
-        bbox = ann['bbox']  # [x_min, y_min, width, height]
-
-        img_info = image_id_map[image_id]
-        img_width = img_info['width']
-        img_height = img_info['height']
-
-        x_min, y_min, width, height = bbox
-        x_center = (x_min + width / 2) / img_width
-        y_center = (y_min + height / 2) / img_height
-        w_norm = width / img_width
-        h_norm = height / img_height
-
-        yolo_class_id = 0  # single class 'sticker'
-
-        label_file = os.path.splitext(img_info['file_name'])[0] + '.txt'
-        label_path = os.path.join(output_dir, label_file)
-
-        with open(label_path, 'a') as f:
-            f.write(f"{yolo_class_id} {x_center} {y_center} {w_norm} {h_norm}\n")
-
-        labels_written += 1
-
-    print(f"✅ COCO JSON converted. Labels written: {labels_written}")
-
-def create_dataset_yaml(yaml_path, images_dir, labels_dir, class_name='sticker'):
-    with open(yaml_path, 'w') as f:
+def create_dataset_yaml(data_yaml, images_dir, labels_dir, class_name='sticker'):
+    with open(data_yaml, 'w') as f:
         f.write(f"path: {os.path.abspath(images_dir)}\n")
         f.write(f"train: {os.path.abspath(images_dir)}\n")
         f.write(f"val: {os.path.abspath(images_dir)}\n")
         f.write(f"names: ['{class_name}']\n")
-    print(f"✅ YOLO dataset YAML created at {yaml_path}")
+    print(f"✅ YOLO dataset YAML created at {data_yaml}")
 
 def select_best_pt_with_validation(weights_dir='runs/train', output_pt='best.pt'):
     best_pt_files = glob.glob(f"{weights_dir}/**/best.pt", recursive=True)
@@ -135,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("--coco_json", type=str, required=True, help="Path to COCO JSON annotation file")
     parser.add_argument("--images_dir", type=str, required=True, help="Path to images directory")
     parser.add_argument("--yolo_labels_dir", type=str, required=True, help="Output directory for YOLO labels")
-    parser.add_argument("--yaml_path", type=str, default="sticker_dataset.yaml", help="Output path for YOLO dataset YAML")
+    parser.add_argument("--data_yaml", type=str, default="sticker_dataset.yaml", help="Output path for YOLO dataset YAML")
     parser.add_argument("--epochs", type=int, default=100, help="Training epochs")
     parser.add_argument("--model_size", type=str, default="n", help="YOLOv8 model size (n, s, m, l, x)")
     args = parser.parse_args()
@@ -144,7 +91,7 @@ if __name__ == "__main__":
     convert_coco_json_to_yolo(args.coco_json, args.yolo_labels_dir, categories_filter=['NOCSAE Recertification Sticker','Helmet Size'])
 
     # 2️⃣ Create dataset YAML
-    create_dataset_yaml(args.yaml_path, args.images_dir, args.yolo_labels_dir)
+    create_dataset_yaml(args.data_yaml, args.images_dir, args.yolo_labels_dir)
 
     # 3️⃣ Train YOLOv8
     model_name = f'yolov8{args.model_size}.pt'
@@ -152,7 +99,7 @@ if __name__ == "__main__":
 
     print(f"✅ Starting YOLOv8 training on {model_name}...")
     model.train(
-        data=args.yaml_path,
+        data=args.data_yaml,
         epochs=args.epochs,
         imgsz=640,
         project='runs/train',
@@ -167,4 +114,4 @@ if __name__ == "__main__":
 
     # 5️⃣  Choose the best model
     print("✅ Choosing the best model...")
-    select_best_pt(args.yaml_path)
+    select_best_pt(args.data_yaml)
