@@ -48,8 +48,11 @@ python helmet_sticker_train.py --coco_json helmet_sticker_dataset.json --images_
 python -c "from ultralytics import YOLO; model = YOLO('sticker.pt'); results = model.predict('images/train/photo_3.jpeg', show=True, save=True, show_labels=False); print(f'{results}');"
 
 echo "New"
-echo "Step 1: Generate labels..." 
-python -c "from coco_to_yolo import convert_coco_json_to_yolo; convert_coco_json_to_yolo('helmet_sticker_dataset.json', 'labels/train', ['NOCSAE Recertification Sticker','Helmet Size']);"
+#echo "Step 1: Generate labels..." 
+#python -c "from coco_to_yolo import convert_coco_json_to_yolo; convert_coco_json_to_yolo('helmet_sticker_dataset.json', 'labels/train', ['NOCSAE Recertification Sticker','Helmet Size']);"
+
+echo "Step 1: Normalize Image Names..." 
+python -c "from normalize_names import normalize_filenames_in_sequence; normalize_filenames_in_sequence(folder='images/train');"
 echo "Step 2: Train model..." 
 python -c "from train_yolo import train_yolo_model; train_yolo_model();"
 ```
@@ -68,6 +71,9 @@ echo "Only images 3, 5, and 7 have identifiable sticker labels"
 python -c "import easyocr; reader = easyocr.Reader(['en'], gpu=False); results = reader.readtext('/opt/homebrew/runs/detect/predict/photo_3.jpg'); print(f'{results}')"
 
 # New
+echo "Step 1: Normalize Image Filenames"
+python -c "from normalize_names import normalize_filenames_in_sequence; normalize_filenames_in_sequence(folder='images/val');"
+echo "Step 2: Perform Inference"
 python -c "from run_prediction_agent import run_pipeline_on_folder; run_pipeline_on_folder();
 ```
 
